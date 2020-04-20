@@ -1,0 +1,193 @@
+`timescale 1ns / 1ps
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\KeyGeneration.v"
+//`include "D:/verilog/projects/AES_cryptography/decryptor/MakeKey.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey1.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey2.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey3.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey4.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey5.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey6.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey7.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey8.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey9.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\MakeKey10.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\InvMixCol.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\InvSbox.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\InvShiftRows.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\InvSubBytes.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\InvRound.v"
+`include "C:\intelFPGA\18.1\AES_cryptography\decryptor\InvLastRound.v"
+
+//Algorithm
+//first of all AddRoundKey
+
+//Round consists:
+//InvShiftRows
+//InvSubBytes
+//AddRoundKey  
+//InvMixColumns
+
+//Last round doesn't have InvMixColumns
+
+module AES_decryptor(
+        input clk,
+        input [127:0] datain,
+        input [127:0] key,
+        output[127:0] dataout
+);
+    
+        wire [127:0] r0_out;
+        wire [127:0] r1_out, r2_out, r3_out, r4_out, r5_out, r6_out, r7_out, r8_out, r9_out;
+    
+        wire [127:0] key_0, key_1, key_2, key_3, key_4, key_5, key_6, key_7, key_8, key_9;
+	 
+        //assign r0_out = datain ^ key_0;
+
+       Make_Inv_Key get_k(
+                .key_in(key),
+                .key_out(key_0)
+        );
+
+        InvLastRound r10(
+                .clk(clk),
+                .rc(4'b1001),
+                .data(datain),
+                .keylastin(key_0),
+                .sb(r1_out)
+        );
+
+        InvRound r1(
+                .clk(clk), 
+                .rc(4'b0000), 
+                .data(r1_out), 
+                .keyin(key_1), 
+               // .keyout(key_1), 
+                .sb(r2_out)
+        );
+
+        InvRound r2(
+                .clk(clk), 
+                .rc(4'b0001), 
+                .data(r2_out), 
+                .keyin(key_2), 
+                //.keyout(key_2), 
+                .sb(r3_out)
+        );
+
+        InvRound r3(
+                .clk(clk), 
+                .rc(4'b0010), 
+                .data(r3_out),
+                .keyin(key_3),
+                //.keyout(key_3),
+                .sb(r4_out)
+        );
+
+        InvRound r4(
+                .clk(clk),
+                .rc(4'b0011),
+                .data(r4_out),
+                .keyin(key_4),
+                //.keyout(key_4),
+                .sb(r5_out)
+        );
+
+        InvRound r5(
+                .clk(clk),
+                .rc(4'b0100),
+                .data(r5_out),
+                .keyin(key_5),
+                //.keyout(key_5),
+                .sb(r6_out)
+        );
+
+        InvRound r6(  
+                .clk(clk),
+                .rc(4'b0101),
+                .data(r6_out),
+                .keyin(key_6),
+                //.keyout(key_6),
+                .sb(r7_out)
+        );
+
+        InvRound r7(
+                .clk(clk),
+                .rc(4'b0110),
+                .data(r7_out),
+                .keyin(key_7),
+                //.keyout(key_7),
+                .sb(r8_out)
+        );
+
+        InvRound r8(
+                .clk(clk),
+                .rc(4'b0111),
+                .data(r8_out),
+                .keyin(key_8),
+                //.keyout(key_8),
+                .sb(r9_out)
+        );
+
+        InvRound r9(
+                .clk(clk),
+                .rc(4'b1000),
+                .data(r9_out),
+                .keyin(key_9),
+                //.keyout(key_9),
+                .sb(r0_out)
+        );
+
+        assign dataout = key ^ r0_out;
+
+/*
+        Make_Inv_Key_1 k1(
+                .key_in(key),
+                .key_out(key_0)
+        );*/
+
+        Make_Inv_Key_2 k2(
+                .key_in(key),
+                .key_out(key_1)
+        );
+
+        Make_Inv_Key_3 k3(
+                .key_in(key),
+                .key_out(key_2)
+        );
+
+        Make_Inv_Key_4 k4(
+                .key_in(key),
+                .key_out(key_3)
+        );
+
+        Make_Inv_Key_5 k5(
+                .key_in(key),
+                .key_out(key_4)
+        );
+
+        Make_Inv_Key_6 k6(
+                .key_in(key),
+                .key_out(key_5)
+        );
+
+        Make_Inv_Key_7 k7(
+                .key_in(key),
+                .key_out(key_6)
+        );
+
+        Make_Inv_Key_8 k8(
+                .key_in(key),
+                .key_out(key_7)
+        );
+
+        Make_Inv_Key_9 k9(
+                .key_in(key),
+                .key_out(key_8)
+        );
+
+        Make_Inv_Key_10 k10(
+                .key_in(key),
+                .key_out(key_9)
+        );
+    
+endmodule

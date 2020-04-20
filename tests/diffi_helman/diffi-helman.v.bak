@@ -1,0 +1,94 @@
+`timescale 10ns/1ns
+module diffi_helman(
+	
+	input wire clk,
+	input wire key_change,
+ 
+	input wire [3:0]   secret_key,
+
+	input wire [127:0] partner_key,
+	input wire val_p,
+	
+	output wire [127:0] my_key,
+	output wire val_my_key,
+
+	output wire [127:0] K,
+	output wire val_K
+	
+);
+
+reg [3:0] count1;
+reg [3:0] count2;
+reg [127:0] g;
+reg [127:0] p;
+reg val_my_key_reg;
+reg val_K_reg;
+reg [127:0] K_reg;
+reg [127:0] K_reg1;
+reg [127:0] div1;
+reg [127:0] div2;
+
+always @(posedge clk)
+	if (key_change)
+	begin
+		g <= 128'd37;
+		count1 <= 4'b1;
+	end
+	else if (~(count1 == secret_key ))
+			begin
+				g <= g * 128'd37;
+				count1 <= count1 + 1'b1;
+			end 
+	
+
+	
+always @(posedge clk)
+	if (key_change)
+	begin
+		p <= 128'b100110001010000000110001;
+		val_my_key_reg <= 1'b0;
+	end
+	else if (count1 == secret_key)
+		begin
+			val_my_key_reg <= 1'b1;
+		end
+
+assign my_key = g;
+assign val_my_key = val_my_key_reg;
+
+
+always @(posedge clk)
+	if (key_change)
+	begin
+		count2 <= 4'b0;
+		K_reg <= 128'b1;
+	end
+	else if (~(count2 == secret_key) & (val_p))
+			begin
+				K_reg <= K_reg * partner_key;
+				count2 <= count2 + 1'b1;
+			end 
+	
+
+	
+always @(posedge clk)
+	if (key_change)
+		val_K_reg <= 1'b0;
+	else if ((count2 == secret_key) & (K_reg > p))
+	begin
+		div2 <= K_reg / p;
+		K_reg1 <= K_reg - p*div2;
+		if (K_reg1 < p)
+			val_K_reg <= 1'b1;
+	end
+	else if (count2 == secret_key)
+		begin
+			K_reg1 <= K_reg;
+			val_K_reg <= 1'b1;
+		end
+
+assign K = K_reg1;
+assign val_K = val_K_reg;
+
+endmodule
+
